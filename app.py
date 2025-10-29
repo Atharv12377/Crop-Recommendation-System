@@ -1,76 +1,42 @@
-import streamlit as st
 import pickle
 import pandas as pd
 
-# 🌿 Page Configuration
-st.set_page_config(page_title="Crop Recommendation System", page_icon="🌾", layout="centered")
+# Load the fitted scaler
+scaler_filename = 'scaler.pkl'
+loaded_scaler = pickle.load(open(scaler_filename, 'rb'))
 
-# 🎯 Load the trained model
-try:
-    with open('best_random_forest_model.pkl', 'rb') as f:
-        model = pickle.load(f)
-except FileNotFoundError:
-    st.error("⚠️ Model file 'best_random_forest_model.pkl' not found. Please make sure it's in the same directory.")
-    st.stop()
+# Load the trained model (assuming you saved your best model as 'best_random_forest_model.pkl')
+model_filename = 'best_random_forest_model.pkl'
+loaded_model = pickle.load(open(model_filename, 'rb'))
 
-# 🌾 App Title and Description
-st.markdown("""
-    <div style='text-align: center;'>
-        <h1 style='color: #2e7d32;'>🌿 Crop Recommendation System 🌿</h1>
-        <p style='color: #555; font-size: 18px;'>Enter your soil and weather details below to get the best crop suggestion for your farm.</p>
-    </div>
-""", unsafe_allow_html=True)
+def predict_crop(N, P, K, temperature, humidity, ph, rainfall):
+    """
+    Predicts the best crop based on input features.
 
-# 🌤️ Input Section
-st.markdown("---")
-st.subheader("🔢 Enter Environmental Parameters")
+    Args:
+        N (float): Nitrogen content in the soil.
+        P (float): Phosphorus content in the soil.
+        K (float): Potassium content in the soil.
+        temperature (float): Temperature in Celsius.
+        humidity (float): Humidity percentage.
+        ph (float): pH value of the soil.
+        rainfall (float): Rainfall in mm.
 
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    N = st.number_input('🧪 Nitrogen (N)', min_value=0.0, max_value=140.0, value=50.0)
-    K = st.number_input('🧂 Potassium (K)', min_value=0.0, max_value=205.0, value=50.0)
-    humidity = st.number_input('💧 Humidity (%)', min_value=0.0, max_value=100.0, value=50.0)
-
-with col2:
-    P = st.number_input('🧫 Phosphorus (P)', min_value=0.0, max_value=145.0, value=50.0)
-    temperature = st.number_input('🌡️ Temperature (°C)', min_value=0.0, max_value=45.0, value=25.0)
-    ph = st.number_input('⚗️ Soil pH', min_value=0.0, max_value=14.0, value=7.0)
-
-with col3:
-    rainfall = st.number_input('🌧️ Rainfall (mm)', min_value=0.0, max_value=300.0, value=100.0)
-    st.write("")  # spacing
-
-# 🌱 Predict Button
-st.markdown("---")
-if st.button('🚜 Get Crop Recommendation', use_container_width=True, type='primary'):
-    # Create a DataFrame from user input
+    Returns:
+        str: The predicted crop label.
+    """
+    # Create a pandas DataFrame from the input values
     input_data = pd.DataFrame([[N, P, K, temperature, humidity, ph, rainfall]],
                               columns=['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall'])
-    
-    # Make prediction
-    prediction = model.predict(input_data)
 
-    # 🌾 Display Result (Professional Styled Card)
-    st.markdown(f"""
-        <div style="
-            background-color:#f0fdf4;
-            border:2px solid #81c784;
-            border-radius:15px;
-            padding:20px;
-            text-align:center;
-            margin-top:20px;
-        ">
-            <h2 style='color:#2e7d32;'>✅ Recommended Crop</h2>
-            <p style='font-size:22px; color:#1b5e20; font-weight:bold;'>{prediction[0].capitalize()}</p>
-            <p style='color:#4b5563;'>This crop is best suited for the provided soil and weather conditions.</p>
-        </div>
-    """, unsafe_allow_html=True)
+    # Scale the input data using the loaded scaler
+    input_data_scaled = loaded_scaler.transform(input_data)
 
-# Footer
-st.markdown("""
-    <hr>
-    <div style='text-align:center; color:grey; font-size:14px;'>
-        Developed by <b>Group 8</b>.
-    </div>
-""", unsafe_allow_html=True)
+    # Make a prediction using the loaded model
+    prediction = loaded_model.predict(input_data_scaled)
+
+    return prediction[0]
+
+# Example usage (you would replace this with your Streamlit input handling)
+# sample_input = predict_crop(90, 42, 43, 20.88, 82.00, 6.50, 202.94)
+# print(f"Predicted crop: {sample_input}")
