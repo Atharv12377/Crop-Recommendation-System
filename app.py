@@ -47,9 +47,14 @@ if st.button('🚜 Get Crop Recommendation', use_container_width=True, type='pri
     # Create a DataFrame from user input
     input_data = pd.DataFrame([[N, P, K, temperature, humidity, ph, rainfall]],
                               columns=['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall'])
+     # Scale the input data using the loaded scaler
+    input_data_scaled = loaded_scaler.transform(input_data)
+
+    # Make a prediction using the loaded model
+    prediction = loaded_model.predict(input_data_scaled)
+
+    return prediction[0]
     
-    # Make prediction
-    prediction = model.predict(input_data)
 
     # 🌾 Display Result (Professional Styled Card)
     st.markdown(f"""
