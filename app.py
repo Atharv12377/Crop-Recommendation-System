@@ -53,7 +53,7 @@ if st.button('🚜 Get Crop Recommendation', use_container_width=True, type='pri
     # Make a prediction using the loaded model
     prediction = loaded_model.predict(input_data_scaled)
 
-    return prediction[0]
+return prediction[0]
     
 
     # 🌾 Display Result (Professional Styled Card)
